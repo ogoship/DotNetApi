@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>OGOship</RootNamespace>
+    <ApplicationIcon />
+    <OutputType>Library</OutputType>
+    <StartupObject />
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Version>0.5.0</Version>
+    <Authors>Pekka Ylenius</Authors>
+    <Company>Koivua Oy / Nettivarasto / OGOship</Company>
+    <Copyright>Koivua Oy / Nettivarasto / OGOship</Copyright>
+    <PackageTags>3PL; OGOship; Nettivarasto; myOGO</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="2.2.0" />
+    <PackageReference Include="RestSharp" Version="106.6.7" />
+    <PackageReference Include="System.ComponentModel.Annotations" Version="4.5.0" />
+  </ItemGroup>
+
+</Project>
