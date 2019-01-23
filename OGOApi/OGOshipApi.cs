@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Net;
 using System.Text;
 using Microsoft.AspNetCore.WebUtilities;
@@ -84,12 +85,12 @@ namespace OGOship
                 AccessToken = response.Data.access_token;
                 ExpiresIn = DateTime.Now.AddSeconds(response.Data.expires_in);
                 RefreshToken = response.Data.refresh_token;
-                Console.WriteLine($"RefreshTokenNow success.");
+                Debug.WriteLine($"RefreshTokenNow success.");
 
                 return true;
             }
 
-            Console.WriteLine($"RefreshTokenNow failed.");
+            Debug.WriteLine($"RefreshTokenNow failed.");
 
             return false;
 
@@ -127,7 +128,7 @@ namespace OGOship
             while (singleResult == limit)
             {
                 page++;
-                Console.WriteLine($"Request Orders page {page}");
+                Debug.WriteLine($"Request Orders page {page}");
 
                 var request = new RestRequest("/api/v1/orders", Method.GET);
 
@@ -153,6 +154,29 @@ namespace OGOship
             return fullList;
         }
 
+
+        /// <summary>
+        /// Add new order
+        /// </summary>
+        /// <param name="order"></param>
+        /// <returns></returns>
+        public OrderResponse AddOrder(Order order)
+        {
+            Debug.WriteLine($"Add new order");
+
+            var request = new RestRequest($"/api/v1/orders", Method.POST);
+            request.AddJsonBody(order);
+
+            var apiResponse = Execute<OrderResponse>(request);
+
+            if (!apiResponse.IsSuccessful)
+            {
+                throw new Exception("Error");
+            }
+
+            return apiResponse.Data;
+        }
+
         /// <summary>
         /// Get products
         /// </summary>
@@ -170,7 +194,7 @@ namespace OGOship
             while (singleResult == limit)
             {
                 page++;
-                Console.WriteLine($"Request Products page {page}");
+                Debug.WriteLine($"Request Products page {page}");
 
                 var request = new RestRequest("/api/v1/products", Method.GET);
 
@@ -205,7 +229,7 @@ namespace OGOship
         /// <returns></returns>
         public ProductResponse AddProduct(Product product)
         {
-            Console.WriteLine($"Request product update");
+            Debug.WriteLine($"Request product update");
 
             var request = new RestRequest($"/api/v1/products", Method.POST);
             request.AddJsonBody(product);
@@ -228,7 +252,7 @@ namespace OGOship
         /// <returns></returns>
         public ProductResponse UpdateProduct(Product product, string oldCode = null)
         {
-            Console.WriteLine($"Request product update");
+            Debug.WriteLine($"Request product update");
 
             if (string.IsNullOrWhiteSpace(oldCode))
                 oldCode = product.Code;
@@ -265,7 +289,7 @@ namespace OGOship
             while (singleResult == limit)
             {
                 page++;
-                Console.WriteLine($"Request Stock page {page}");
+                Debug.WriteLine($"Request Stock page {page}");
 
                 var request = new RestRequest("/api/v1/stock", Method.GET);
 
