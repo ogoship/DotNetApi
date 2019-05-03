@@ -1,6 +1,4 @@
-﻿//using Newtonsoft.Json;
-//using Newtonsoft.Json.Converters;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
 namespace OGOship.Model
@@ -24,7 +22,6 @@ namespace OGOship.Model
         [Required]
         [Description("Type of webhook")]
         [EnumDataType(typeof(WebhookType))]
-        //        [JsonConverter(typeof(StringEnumConverter))] //could effect deserialization
         public WebhookType Type { get; set; }
     }
 
