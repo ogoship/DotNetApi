@@ -1,12 +1,12 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.WebUtilities;
+using OGOship.Model;
+using RestSharp;
+using RestSharp.Authenticators;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net;
 using System.Text;
-using Microsoft.AspNetCore.WebUtilities;
-using OGOship.Model;
-using RestSharp;
-using RestSharp.Authenticators;
 
 namespace OGOship
 {
@@ -34,7 +34,6 @@ namespace OGOship
 
         public OgoShipApi()
         {
-
         }
 
         public bool Authenticate(string username, string password, string clientId, string clientSecret, string scope)
@@ -93,7 +92,6 @@ namespace OGOship
             Debug.WriteLine($"RefreshTokenNow failed.");
 
             return false;
-
         }
 
         public IRestResponse<T> Execute<T>(RestRequest request) where T : new()
@@ -105,15 +103,27 @@ namespace OGOship
             if (AccessToken != null)
                 client.Authenticator = new OAuth2AuthorizationRequestHeaderAuthenticator(AccessToken, "Bearer");
 
-
             var result = client.Execute<T>(request);
 
             return result;
+        }
 
+        public IRestResponse Execute(RestRequest request)
+        {
+            if (ExpiresIn < DateTime.Now)
+                RefreshTokenNow();
+
+            var client = new RestClient(ApiServer);
+            if (AccessToken != null)
+                client.Authenticator = new OAuth2AuthorizationRequestHeaderAuthenticator(AccessToken, "Bearer");
+
+            var result = client.Execute(request);
+
+            return result;
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="modifiedAfter"></param>
         /// <param name="reference"></param>
@@ -153,7 +163,6 @@ namespace OGOship
 
             return fullList;
         }
-
 
         /// <summary>
         /// Add new order
@@ -245,7 +254,7 @@ namespace OGOship
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="product"></param>
         /// <param name="oldCode"></param>
@@ -313,6 +322,144 @@ namespace OGOship
             }
 
             return fullList;
+        }
+
+        private const string NullDataContent = "null";
+
+        /// <summary>
+        /// Get webHooks
+        /// </summary>
+        /// <returns>List of WebHookResponse</returns>
+        public List<WebHookResponse> GetWebHooks()
+        {
+            List<WebHookResponse> result = null;
+            var url = "/api/v1/webhooks";
+
+            var request = new RestRequest(url, Method.GET);
+
+            var response = Execute<List<WebHookResponse>>(request);
+
+            if (response.StatusCode == HttpStatusCode.OK && string.Equals(response.Content, NullDataContent, StringComparison.OrdinalIgnoreCase))
+            {
+                result = new List<WebHookResponse>();
+            }
+            else if (response.ErrorException != null || response.StatusCode != HttpStatusCode.OK)
+            {
+                var message = $"Get Request failed. Status code:{response.StatusCode}; Error:{response.ErrorMessage}";
+                throw new Exception(message);
+            };
+
+            result = response.Data;
+
+            return result;
+        }
+
+        /// <summary>
+        /// Get webHook by id
+        /// </summary>
+        /// <returns>WebHookResponse model</returns>
+        public WebHookResponse GetWebHook(Guid id)
+        {
+            WebHookResponse result = null;
+            var url = $"/api/v1/webhooks/{id}";
+
+            var request = new RestRequest(url, Method.GET);
+
+            var response = Execute<WebHookResponse>(request);
+
+            if (response.StatusCode == HttpStatusCode.OK && string.Equals(response.Content, NullDataContent, StringComparison.OrdinalIgnoreCase))
+            {
+                result = null;
+            }
+            else if (response.ErrorException != null || response.StatusCode != HttpStatusCode.OK)
+            {
+                var message = $"Get webhook by Id failed. Status code:{response.StatusCode}; Error:{response.ErrorMessage}";
+                throw new Exception(message);
+            };
+
+            result = response.Data;
+
+            return result;
+        }
+
+        /// <summary>
+        /// Delete WebHook by Id
+        /// </summary>
+        public void DeleteWebHook(Guid id)
+        {
+            WebHookResponse result = null;
+            var url = $"/api/v1/webhooks/{id}";
+
+            var request = new RestRequest(url, Method.DELETE);
+
+            var response = Execute(request);
+
+            if (response.ErrorException != null || response.StatusCode != HttpStatusCode.NoContent)
+            {
+                var message = $"Delete webhook failed. Status code:{response.StatusCode}; Error:{response.ErrorMessage}";
+                throw new Exception(message);
+            };
+        }
+
+        /// <summary>
+        /// Update webhook with given newData model
+        /// </summary>
+        /// <param name="id">Id of the webhook</param>
+        /// <param name="updateModel">Model to update webhoook</param>
+        /// <returns>Updated webhook data model - WebHookResponse</returns>
+        public WebHookResponse UpdateWebHook(Guid id, WebHookResponse updateModel)
+        {
+            WebHookResponse result = null;
+            var url = $"/api/v1/webhooks/{id}";
+
+            var request = new RestRequest(url, Method.PUT);
+            request.AddJsonBody(updateModel);
+
+            var response = Execute<WebHookResponse>(request);
+
+            if (response.StatusCode == HttpStatusCode.OK && string.Equals(response.Content, NullDataContent, StringComparison.OrdinalIgnoreCase))
+            {
+                result = null;
+            }
+            else if (response.ErrorException != null || response.StatusCode != HttpStatusCode.OK)
+            {
+                var message = $"Update webhook failed. Status code:{response.StatusCode}; Error:{response.ErrorMessage}";
+                throw new Exception(message);
+            };
+
+            result = response.Data;
+
+            return result;
+        }
+
+        /// <summary>
+        /// Create webhook with given newModel.
+        /// </summary>
+        /// <param name="newModel">Model to update webhoook</param>
+        /// <returns>Creates webhook data model - WebHookResponse</returns>
+        public WebHookResponse CreateWebHook(WebHook newModel)
+        {
+            WebHookResponse result = null;
+            var url = $"/api/v1/webhooks";
+
+            var request = new RestRequest(url, Method.POST);
+            request.AddJsonBody(newModel);
+
+            var response = Execute<WebHookResponse>(request);
+
+            if (response.StatusCode == HttpStatusCode.OK && string.Equals(response.Content, NullDataContent, StringComparison.OrdinalIgnoreCase))
+            {
+                result = null;
+            }
+            else if (response.ErrorException != null || response.StatusCode != HttpStatusCode.OK)
+            {
+                var message = $"Ceate webhook failed. Status code:{response.StatusCode}; Error:{response.ErrorMessage}";
+                throw new Exception(message);
+            };
+
+            result = response.Data;
+
+            return result;
         }
     }
 }

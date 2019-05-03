@@ -1,33 +1,47 @@
+using OGOship;
+using OGOship.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Threading.Tasks;
-using OGOship;
-using OGOship.Model;
 
 namespace CoreOauth2Client
 {
-
-
-
-class Program
-{
-    static void Main(string[] args)
+    internal class Program
     {
-        var api = new OgoShipApi();
-
-        var success = api.Authenticate(
-            "{merchantId}",
-            "{secredToken}",
-            "123456",
-            "abcdef",
-            "read:order read:product write:product write:order");
-
-        if (success)
+        private static void Main(string[] args)
         {
+            var api = new OgoShipApi();
+            var merchantId = "{merchantId}";
+            var secredToken = "{secredToken}";
+            var applicationId = "123456";
+            var applicationSecret = "abcdef";
 
+            var success = api.Authenticate(
+                merchantId,
+                secredToken,
+                applicationId,
+                applicationSecret,
+                "read:order read:product write:product write:order read:webhook write:webhook");
+
+            if (success)
+            {
+                Console.WriteLine("Authentication done.");
+
+                WorkWithWebHooks(api);
+                GetProductsAndOrders(api);
+            }
+            else
+            {
+                Console.WriteLine("There was error authenticating to OGOship. Please verify your login information");
+                Console.WriteLine($"ClientId:     {api.ClientId}");
+                Console.WriteLine($"ClientSecred: {api.ClientSecred}");
+            }
+            Console.WriteLine("Bye now!");
+            Console.ReadLine();
+        }
+
+        private static void GetProductsAndOrders(OgoShipApi api)
+        {
             Console.WriteLine("Create new testproduct");
             var product1 = new Product
             {
@@ -36,10 +50,7 @@ class Program
                 LanguageCode = "en",
             };
 
-            var productResponse = (Product) api.AddProduct(product1);
-
-
-
+            var productResponse = (Product)api.AddProduct(product1);
 
             Console.WriteLine("Rename and update product info");
             var oldCode = productResponse.Code;
@@ -58,7 +69,7 @@ class Program
             product1.Supplier = "Test supplier";
             product1.SupplierCode = $"su{product1.Code}";
 
-            productResponse = api.UpdateProduct(productResponse,oldCode);
+            productResponse = api.UpdateProduct(productResponse, oldCode);
 
             var order1 = new Order
             {
@@ -89,7 +100,6 @@ class Program
 
             var response = api.AddOrder(order1);
 
-
             Console.WriteLine("Get all orders");
             var orders = api.GetOrders(modifiedAfter: new DateTime(2017, 1, 1));
             foreach (var order in orders)
@@ -104,8 +114,8 @@ class Program
                 Console.WriteLine($"Check  {product.Code}");
 
                 // Get product and stock by code
-                var p = api.GetProducts(code:product.Code).FirstOrDefault();
-                var s = api.GetStockLevels(productCode:product.Code).FirstOrDefault();
+                var p = api.GetProducts(code: product.Code).FirstOrDefault();
+                var s = api.GetStockLevels(productCode: product.Code).FirstOrDefault();
 
                 if (p == null || p.Name != product.Name || s == null || s.StockAvailable != p.StockAvailable)
                 {
@@ -114,20 +124,33 @@ class Program
                 else
                 {
                     Console.WriteLine($"Product ok {product.Code}");
-
                 }
             }
-
-
         }
-        else
+
+        private static void WorkWithWebHooks(OgoShipApi api)
         {
-            Console.WriteLine("There was error authenticating to OGOship. Please verify your login information");
-            Console.WriteLine($"ClientId:     {api.ClientId}");
-            Console.WriteLine($"ClientSecred: {api.ClientSecred}");
+            List<WebHookResponse> webHooksList = api.GetWebHooks();
+
+            var newHook = new WebHook()
+            {
+                Url = "test",
+                Key = "testKey",
+                Type = WebhookType.OrderShipped
+            };
+
+            WebHookResponse createdWebhook = api.CreateWebHook(newHook);
+
+            WebHookResponse webhook = api.GetWebHook(createdWebhook.Id);
+
+            webhook.Key = "TestTestTestKey";
+            WebHookResponse  updatedWebhook = api.UpdateWebHook(createdWebhook.Id, webhook);
+
+            webHooksList = api.GetWebHooks();
+
+            api.DeleteWebHook(webhook.Id);
+
+            webHooksList = api.GetWebHooks();
         }
-        Console.WriteLine("Bye now!");
-        Console.ReadLine();
     }
-}
 }
