@@ -3,6 +3,7 @@ using OGOship.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using OgoShip.Models.WebApi.V1;
 
 namespace CoreOauth2Client
 {
@@ -71,7 +72,7 @@ namespace CoreOauth2Client
 
             productResponse = api.UpdateProduct(productResponse, oldCode);
 
-            var order1 = new Order
+            var order1 = new OrderRequest
             {
                 Reference = $"test{DateTime.UtcNow.ToString()}",
                 Customer = new Customer

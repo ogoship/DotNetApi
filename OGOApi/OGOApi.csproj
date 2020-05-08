@@ -7,15 +7,17 @@
     <OutputType>Library</OutputType>
     <StartupObject />
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>0.5.0</Version>
+    <Version>0.6.0</Version>
     <Authors>Pekka Ylenius</Authors>
-    <Company>Koivua Oy / Nettivarasto / OGOship</Company>
-    <Copyright>Koivua Oy / Nettivarasto / OGOship</Copyright>
+    <Company>OGOship Oy / Nettivarasto</Company>
+    <Copyright>OGOship Oy / Nettivarasto</Copyright>
     <PackageTags>3PL; OGOship; Nettivarasto; myOGO</PackageTags>
+    <UserSecretsId>b9c8ec2c-91aa-4651-a536-5714407b67c5</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="2.2.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="RestSharp" Version="106.6.7" />
     <PackageReference Include="System.ComponentModel.Annotations" Version="4.5.0" />
   </ItemGroup>

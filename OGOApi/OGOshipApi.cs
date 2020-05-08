@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net;
 using System.Text;
+using OgoShip.Models.WebApi.V1;
 
 namespace OGOship
 {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 
-namespace OGOship.Model
+namespace OgoShip.Models.WebApi.V1
 {
     public class StockResponse
     {
@@ -14,12 +14,5 @@ namespace OGOship.Model
         public int Reserved { get; set; }
         [Description("Stock level modified.")]
         public DateTime Modified { get; set; }
-    }
-
-    public class StockSearchRules : SearchRules
-    {
-        public string ProductCode { get; set; }
-
-        public DateTime? ModifiedAfter { get; set; }
     }
 }
