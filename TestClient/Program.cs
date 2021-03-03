@@ -22,14 +22,16 @@ namespace CoreOauth2Client
                 secredToken,
                 applicationId,
                 applicationSecret,
-                "read:order read:product write:product write:order read:webhook write:webhook");
+                "read:order write:order read:product write:product read:webhook write:webhook read:metadata write:metadata");
 
             if (success)
             {
                 Console.WriteLine("Authentication done.");
 
-                WorkWithWebHooks(api);
+                //WorkWithWebHooks(api);
                 GetProductsAndOrders(api);
+                PostStockUpdate(api);
+                Console.ReadKey();
             }
             else
             {
@@ -129,6 +131,56 @@ namespace CoreOauth2Client
             }
         }
 
+
+        private static void PostStockUpdate(OgoShipApi api)
+        {
+
+
+            Console.WriteLine("Create New StockUpdate");
+            var stockUpdate1 = new StockUpdateRequest
+            {
+                WarehouseCode = "TEST",
+                Status = "",
+                Supplier = "Test supplier",
+                Containers = 1,
+                Pallets = 10,
+                Parcels = 100,
+                DeliveredBy = "Test Supplier",
+                ReceiveDate = DateTime.UtcNow.AddDays(5),
+                MerchantComments = "Test Merchant Comment",
+                TrackingCodes = new List<string> { "123456789", "987654321" },
+                SpecialAction = "special action comment if needed",
+                Reference = "testreference",
+                Products = new List<StockUpdateRequest.ProductUpdateRequest>
+                {
+                    new StockUpdateRequest.ProductUpdateRequest
+                    {
+                        Code = "TestProductCode",
+                        Name = "Test Product",
+                        ExpectedQuantity = 100,
+                        SupplyPrice = (decimal?)10.99,
+                        EANCode = "1234567890",
+                        CountryOfOrigin = "FI",
+                        CustomsDescription = "Test product made out of test",
+                        HsCode = "20111222"
+                    }
+                }
+            };
+
+            api.AddStockUpdate(stockUpdate1);
+
+
+
+            Console.WriteLine("Get stock update by reference");
+            var stockUpdates = api.GetStockUpdate(null, stockUpdate1.Reference, null);
+            foreach (var stockUpdate in stockUpdates)
+            {                  
+                Console.WriteLine($"Reference: {stockUpdate.Reference}");                
+            }
+            
+
+
+        }
         private static void WorkWithWebHooks(OgoShipApi api)
         {
             List<WebHookResponse> webHooksList = api.GetWebHooks();

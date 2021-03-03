@@ -325,6 +325,75 @@ namespace OGOship
             return fullList;
         }
 
+        /// <summary>
+        /// Get stock update 
+        /// </summary>
+        /// /// <param name="modifiedAfter"></param>
+        /// <param name="reference"></param>
+        /// /// <param name="autoreference"></param>
+        /// <returns></returns>
+        public List<StockUpdateResponse> GetStockUpdate(DateTime? modifiedAfter = null, string reference = null, string autoreference = null)
+        {
+            var fullList = new List<StockUpdateResponse>();
+
+            var limit = 50;
+            var page = 0;
+            var singleResult = limit;
+            while (singleResult == limit)
+            {
+                page++;
+                Debug.WriteLine($"Request stock update page {page}");
+
+                var request = new RestRequest("/api/v1/StockUpdate", Method.GET);
+
+                request.AddQueryParameter("limit", limit.ToString());
+                request.AddQueryParameter("page", page.ToString());
+
+                if (modifiedAfter.HasValue)
+                    request.AddQueryParameter("modifiedAfter", modifiedAfter.Value.ToString("O"));
+                if (!string.IsNullOrWhiteSpace(autoreference))
+                    request.AddQueryParameter("autoreference", autoreference);
+                if (!string.IsNullOrWhiteSpace(reference))
+                    request.AddQueryParameter("reference", reference);
+                
+
+                var apiResponse = Execute<List<StockUpdateResponse>>(request);
+                if (apiResponse.IsSuccessful)
+                {
+                    singleResult = apiResponse.Data.Count;
+                    fullList.AddRange(apiResponse.Data);
+                }
+                else
+                {
+                    throw new Exception("Error");
+                }
+            }
+
+            return fullList;
+        }
+
+        /// <summary>
+        /// Add new stock update
+        /// </summary>
+        /// <param name="stockUpdate"></param>
+        /// <returns></returns>
+        public StockUpdateRequest AddStockUpdate(StockUpdateRequest stockUpdate)
+        {
+            Debug.WriteLine($"Request new product update");
+
+            var request = new RestRequest($"/api/v1/StockUpdate", Method.POST);
+            request.AddJsonBody(stockUpdate);
+
+            var apiResponse = Execute<StockUpdateRequest>(request);
+
+            if (!apiResponse.IsSuccessful)
+            {
+                throw new Exception("Error");
+            }
+
+            return apiResponse.Data;
+        }
+
         private const string NullDataContent = "null";
 
         /// <summary>
